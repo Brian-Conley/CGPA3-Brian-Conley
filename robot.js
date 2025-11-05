@@ -1,5 +1,68 @@
 "use strict";
 
+function makeCube(center, size, rotation, color) {
+
+    var cube_vertexColors = [
+        color,
+        color,
+        color,
+        color,
+        color,
+        color,
+        color,
+        color
+    ];
+
+    const sizeh = size / 2;
+
+    var local_vertices = [
+        vec3( -sizeh, -sizeh,  sizeh ),
+        vec3( -sizeh,  sizeh,  sizeh ),
+        vec3(  sizeh,  sizeh,  sizeh ),
+        vec3(  sizeh, -sizeh,  sizeh ),
+        vec3( -sizeh, -sizeh, -sizeh ),
+        vec3( -sizeh,  sizeh, -sizeh ),
+        vec3(  sizeh,  sizeh, -sizeh ),
+        vec3(  sizeh, -sizeh, -sizeh )
+    ];
+    var cube_vertices = [];
+
+    var rotx = rotateX(rotation[0]);
+    var roty = rotateY(rotation[1]);
+    var rotz = rotateZ(rotation[2]);
+    var rot = mult(rotz, mult(roty, rotx));
+    var t = mult(translate(center), rot);
+
+    for (let v of local_vertices) {
+        var v4 = vec4(v, 1);
+        var rot_v4 = mult(t, v4);
+        cube_vertices.push(vec3(rot_v4[0] + center[0], rot_v4[1] + center[1], rot_v4[2] + center[2]));
+    }
+
+    var cube_indices = [
+        1, 0, 3,
+        3, 2, 1,
+        2, 3, 7,
+        7, 6, 2,
+        3, 0, 4,
+        4, 7, 3,
+        6, 5, 1,
+        1, 2, 6,
+        4, 5, 6,
+        6, 7, 4,
+        5, 4, 0,
+        0, 1, 5
+    ];
+
+    return {
+        verts: cube_vertices,
+        colors: cube_vertexColors,
+        numVerts: 36,
+        idxs: cube_indices
+    }
+
+}
+
 var canvas;
 var gl;
 
@@ -10,6 +73,13 @@ var zAxis = 2;
 var theta = [ 0, 0, 0 ];
 var thetaLoc;
 
+let shape = makeCube(vec3(0, 0, 0), 1.0, vec3(0, 0, 0), vec4(0.0, 0.00, 0.00, 1.0));
+var vertices = shape.verts;
+var vertexColors = shape.colors;
+var indices = shape.idxs;
+var numVertices = shape.numVerts;
+
+/*
 var vertices = [
     // Head: Pyramid
     vec3(  0.0,  0.5,  0.0 ), // 0
@@ -37,6 +107,7 @@ var indices = [
     1, 2, 3
 
 ];
+*/
 
 window.onload = function init()
 {
