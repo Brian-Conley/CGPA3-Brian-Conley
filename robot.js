@@ -2,15 +2,28 @@
 
 function makeCube(center, size, rotation, color) {
 
+    /*
+        var cube_vertexColors = [
+            color,
+            color,
+            color,
+            color,
+            color,
+            color,
+            color,
+            color
+        ];
+    */
+
     var cube_vertexColors = [
-        color,
-        color,
-        color,
-        color,
-        color,
-        color,
-        color,
-        color
+        vec4( 0.0, 0.0, 0.0, 1.0 ),
+        vec4( 1.0, 0.0, 0.0, 1.0 ),
+        vec4( 0.0, 1.0, 0.0, 1.0 ),
+        vec4( 0.0, 0.0, 1.0, 1.0 ),
+        vec4( 1.0, 1.0, 0.0, 1.0 ),
+        vec4( 1.0, 0.0, 1.0, 1.0 ),
+        vec4( 0.0, 1.0, 1.0, 1.0 ),
+        vec4( 0.5, 0.5, 0.5, 1.0 ),
     ];
 
     const sizeh = size / 2;
@@ -27,16 +40,18 @@ function makeCube(center, size, rotation, color) {
     ];
     var cube_vertices = [];
 
+    /*
     var rotx = rotateX(rotation[0]);
     var roty = rotateY(rotation[1]);
     var rotz = rotateZ(rotation[2]);
-    var rot = mult(rotz, mult(roty, rotx));
+    var rot = mult(rotx, mult(roty, rotz));
     var t = mult(translate(center), rot);
+    */
+    var t = translate(center);
 
     for (let v of local_vertices) {
-        var v4 = vec4(v, 1);
-        var rot_v4 = mult(t, v4);
-        cube_vertices.push(vec3(rot_v4[0] + center[0], rot_v4[1] + center[1], rot_v4[2] + center[2]));
+        var rot_v3 = vec3( v[0]*t[0][0], v[1]*t[1][1], v[2]*t[2][2] );
+        cube_vertices.push(vec3( rot_v3[0], rot_v3[1], rot_v3[2] ));
     }
 
     var cube_indices = [
@@ -73,7 +88,7 @@ var zAxis = 2;
 var theta = [ 0, 0, 0 ];
 var thetaLoc;
 
-let shape = makeCube(vec3(0, 0, 0), 1.0, vec3(0, 0, 0), vec4(0.0, 0.00, 0.00, 1.0));
+let shape = makeCube(vec3(0, 0, 0), 1.0, vec3(30, 0, 45), vec4(0.5, 0.25, 0.5, 1.0));
 var vertices = shape.verts;
 var vertexColors = shape.colors;
 var indices = shape.idxs;
