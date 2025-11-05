@@ -3,7 +3,7 @@
 function makeCube(center, size, rotation, color) {
 
     /*
-        var cube_vertexColors = [
+        var vertexColors = [
             color,
             color,
             color,
@@ -15,7 +15,7 @@ function makeCube(center, size, rotation, color) {
         ];
     */
 
-    var cube_vertexColors = [
+    var vertexColors = [
         vec4( 0.0, 0.0, 0.0, 1.0 ),
         vec4( 1.0, 0.0, 0.0, 1.0 ),
         vec4( 0.0, 1.0, 0.0, 1.0 ),
@@ -38,23 +38,21 @@ function makeCube(center, size, rotation, color) {
         vec3(  sizeh,  sizeh, -sizeh ),
         vec3(  sizeh, -sizeh, -sizeh )
     ];
-    var cube_vertices = [];
+    var vertices = [];
 
-    /*
     var rotx = rotateX(rotation[0]);
     var roty = rotateY(rotation[1]);
     var rotz = rotateZ(rotation[2]);
     var rot = mult(rotx, mult(roty, rotz));
     var t = mult(translate(center), rot);
-    */
-    var t = translate(center);
 
     for (let v of local_vertices) {
-        var rot_v3 = vec3( v[0]*t[0][0], v[1]*t[1][1], v[2]*t[2][2] );
-        cube_vertices.push(vec3( rot_v3[0], rot_v3[1], rot_v3[2] ));
+        var v4 = vec4(v, 1);
+        var rot_v4 = vec3( dot(v4, t[0]), dot(v4, t[1]), dot(v4, t[2]) );
+        vertices.push(vec3( rot_v4[0], rot_v4[1], rot_v4[2] ));
     }
 
-    var cube_indices = [
+    var indices = [
         1, 0, 3,
         3, 2, 1,
         2, 3, 7,
@@ -70,10 +68,10 @@ function makeCube(center, size, rotation, color) {
     ];
 
     return {
-        verts: cube_vertices,
-        colors: cube_vertexColors,
-        numVerts: 36,
-        idxs: cube_indices
+        vertices: vertices,
+        vertexColors: vertexColors,
+        numVertices: 36,
+        indices: indices
     }
 
 }
@@ -88,11 +86,11 @@ var zAxis = 2;
 var theta = [ 0, 0, 0 ];
 var thetaLoc;
 
-let shape = makeCube(vec3(0, 0, 0), 1.0, vec3(30, 0, 45), vec4(0.5, 0.25, 0.5, 1.0));
-var vertices = shape.verts;
-var vertexColors = shape.colors;
-var indices = shape.idxs;
-var numVertices = shape.numVerts;
+let shape = makeCube(vec3(0.0, 0.0, 0), 1.0, vec3(45, 0, 15), vec4(0.5, 0.25, 0.5, 1.0));
+var vertices = shape.vertices;
+var vertexColors = shape.vertexColors;
+var indices = shape.indices;
+var numVertices = shape.numVertices;
 
 /*
 var vertices = [
