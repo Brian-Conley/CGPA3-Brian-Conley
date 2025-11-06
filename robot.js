@@ -1,6 +1,6 @@
 "use strict";
 
-function makeCube(center, size, rotation, color) {
+function makeCube(center, size, rotation, color, canRecolor) {
 
         var vertexColors = [
             color,
@@ -12,19 +12,6 @@ function makeCube(center, size, rotation, color) {
             color,
             color
         ];
-
-    /*
-    var vertexColors = [
-        vec4( 0.0, 0.0, 0.0, 1.0 ),
-        vec4( 1.0, 0.0, 0.0, 1.0 ),
-        vec4( 0.0, 1.0, 0.0, 1.0 ),
-        vec4( 0.0, 0.0, 1.0, 1.0 ),
-        vec4( 1.0, 1.0, 0.0, 1.0 ),
-        vec4( 1.0, 0.0, 1.0, 1.0 ),
-        vec4( 0.0, 1.0, 1.0, 1.0 ),
-        vec4( 0.5, 0.5, 0.5, 1.0 ),
-    ];
-    */
 
     const sizeh = size / 2;
 
@@ -71,12 +58,13 @@ function makeCube(center, size, rotation, color) {
         vertices: vertices,
         vertexColors: vertexColors,
         numVertices: 36,
-        indices: indices
+        indices: indices,
+        canRecolor: canRecolor
     }
 
 }
 
-function makeRectangularPrism(center, length, height, width, rotation, color) {
+function makeRectangularPrism(center, length, height, width, rotation, color, canRecolor) {
 
     var vertexColors = [
         color,
@@ -88,19 +76,6 @@ function makeRectangularPrism(center, length, height, width, rotation, color) {
         color,
         color
     ];
-
-    /*
-    var vertexColors = [
-        vec4( 0.0, 0.0, 0.0, 1.0 ),
-        vec4( 1.0, 0.0, 0.0, 1.0 ),
-        vec4( 0.0, 1.0, 0.0, 1.0 ),
-        vec4( 0.0, 0.0, 1.0, 1.0 ),
-        vec4( 1.0, 1.0, 0.0, 1.0 ),
-        vec4( 1.0, 0.0, 1.0, 1.0 ),
-        vec4( 0.0, 1.0, 1.0, 1.0 ),
-        vec4( 0.5, 0.5, 0.5, 1.0 ),
-    ];
-    */
 
     const lengthh = length / 2;
     const heighth = height / 2;
@@ -149,12 +124,13 @@ function makeRectangularPrism(center, length, height, width, rotation, color) {
         vertices: vertices,
         vertexColors: vertexColors,
         numVertices: 36,
-        indices: indices
+        indices: indices,
+        canRecolor: canRecolor
     }
 
 }
 
-function makePyramid(center, base, height, rotation, color ) {
+function makePyramid(center, base, height, rotation, color, canRecolor) {
 
     var vertexColors = [
         color,
@@ -162,15 +138,6 @@ function makePyramid(center, base, height, rotation, color ) {
         color,
         color
     ];
-
-    /*
-    var vertexColors = [
-        vec4( 1.0, 0.0, 0.0, 1.0 ),
-        vec4( 0.0, 1.0, 0.0, 1.0 ),
-        vec4( 0.0, 0.0, 1.0, 1.0 ),
-        vec4( 1.0, 1.0, 0.0, 1.0 )
-    ];
-    */
 
     const baseh = base / 2;
     const heighth = height / 2;
@@ -206,7 +173,8 @@ function makePyramid(center, base, height, rotation, color ) {
         vertices: vertices,
         vertexColors: vertexColors,
         numVertices: 12,
-        indices: indices
+        indices: indices,
+        canRecolor: canRecolor
     }
 
 }
@@ -218,12 +186,20 @@ function constructComplexShape(shapes) {
     var indices = [];
     var numVertices = 0;
     var offset= 0;
+    var recolorableVertices = [];
 
     for (const shape of shapes) {
         vertices = vertices.concat(shape.vertices);
         vertexColors = vertexColors.concat(shape.vertexColors);
         indices = indices.concat(shape.indices.map(i => i + offset));
         numVertices += shape.numVertices;
+
+        if (shape.canRecolor) {
+            for (let i = 0; i < shape.vertices.length; i++) {
+                recolorableVertices.push(i + offset);
+            }
+        }
+
         offset += shape.vertices.length;
     }
 
@@ -231,9 +207,18 @@ function constructComplexShape(shapes) {
         vertices: vertices,
         vertexColors: vertexColors,
         indices: indices,
-        numVertices: numVertices
+        numVertices: numVertices,
+        recolorableVertices: recolorableVertices
     };
 
+}
+
+function recolor(complexShape) {
+    for (var v of complexShape.recolorableVertices) {
+        var redval = complexShape.vertexColors[v][0];
+        var blueval = complexShape.vertexColors[v][2];
+        complexShape.vertexColors[v] = vec4((redval+1) % 2, 0, (blueval+1) % 2, 1);
+    }
 }
 
 var canvas;
@@ -250,7 +235,8 @@ let hat = makePyramid(
     vec3(0, .65, 0),
     .08, .1,
     vec3(0,0,0),
-    vec4(0,0,1,1)
+    vec4(0,0,1,1),
+    true
 );
 
 // (.1, .6, .1) -> (-.1, .4, -.1)
@@ -258,74 +244,83 @@ let head = makeCube(
     vec3(0, .5, 0),
     0.2,
     vec3(0,0,0),
-    vec4(1,0,0,1)
+    vec4(1,0,0,1),
+    true
 );
 
 let eye1 = makeCube(
     vec3(-.04, .5, .1),
     0.02,
     vec3(0,0,0),
-    vec4(0,0,0,1)
+    vec4(0,0,0,1),
+    false
 );
 
 let eye2 = makeCube(
     vec3(.04, .5, .1),
     0.02,
     vec3(0,0,0),
-    vec4(0,0,0,1)
+    vec4(0,0,0,1),
+    false
 );
 
 let torso = makeRectangularPrism(
     vec3(0, .15, 0),
     .4, .5, .2,
     vec3(0,0,0),
-    vec4(0,0,1,1)
+    vec4(0,0,1,1),
+    true
 );
 
 let shoulder1 = makePyramid(
     vec3(.2, .3, 0),
     .2, .1,
     vec3(0,-90,90),
-    vec4(1,0,0,1)
+    vec4(1,0,0,1),
+    true
 );
 
 let shoulder2 = makePyramid(
     vec3(-.2, .3, 0),
     .2, .1,
     vec3(0,-90,90),
-    vec4(1,0,0,1)
+    vec4(1,0,0,1),
+    true
 );
 
 let arm1 = makeRectangularPrism(
     vec3(-.23, .365, .2),
     .075, .07, .3,
     vec3(0,0,0),
-    vec4(1,0,0,1)
+    vec4(1,0,0,1),
+    true
 );
 
 let arm2 = makeRectangularPrism(
     vec3(.23, .365, .2),
     .075, .07, .3,
     vec3(0,0,0),
-    vec4(1,0,0,1)
+    vec4(1,0,0,1),
+    true
 );
 
 let leg1 = makeRectangularPrism(
     vec3(-.1, -.25, 0),
     .1, .3, .1,
     vec3(0,0,0),
-    vec4(1,0,0,1)
+    vec4(1,0,0,1),
+    true
 );
 
 let leg2 = makeRectangularPrism(
     vec3(.1, -.25, 0),
     .1, .3, .1,
     vec3(0,0,0),
-    vec4(1,0,0,1)
+    vec4(1,0,0,1),
+    true
 );
 
-let shape = constructComplexShape([hat, head, eye1, eye2, torso,
-    shoulder1, shoulder2, arm1, arm2, leg1, leg2]);
+let shape = constructComplexShape([hat, head, eye1, eye2, torso, shoulder1, shoulder2, arm1, arm2, leg1, leg2]);
 
 var vertices = shape.vertices;
 var vertexColors = shape.vertexColors;
@@ -389,6 +384,11 @@ window.onload = function init()
     document.getElementById( "zButton" ).onclick = function () {
         axis = zAxis;
     };
+    document.getElementById( "colorButton" ).onclick = function () {
+        recolor(shape);
+        gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(shape.vertexColors), gl.STATIC_DRAW);
+    };
 
 
     render();
@@ -398,10 +398,8 @@ function render()
 {
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    axis = (axis + 1) % 3;
     theta[axis] += 3.0;
     gl.uniform3fv(thetaLoc, theta);
-
 
     gl.drawElements( gl.TRIANGLES, numVertices, gl.UNSIGNED_BYTE, 0 );
 
