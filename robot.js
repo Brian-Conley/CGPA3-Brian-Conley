@@ -2,7 +2,6 @@
 
 function makeCube(center, size, rotation, color) {
 
-    /*
         var vertexColors = [
             color,
             color,
@@ -13,8 +12,8 @@ function makeCube(center, size, rotation, color) {
             color,
             color
         ];
-    */
 
+    /*
     var vertexColors = [
         vec4( 0.0, 0.0, 0.0, 1.0 ),
         vec4( 1.0, 0.0, 0.0, 1.0 ),
@@ -25,6 +24,7 @@ function makeCube(center, size, rotation, color) {
         vec4( 0.0, 1.0, 1.0, 1.0 ),
         vec4( 0.5, 0.5, 0.5, 1.0 ),
     ];
+    */
 
     const sizeh = size / 2;
 
@@ -76,6 +76,166 @@ function makeCube(center, size, rotation, color) {
 
 }
 
+function makeRectangularPrism(center, length, height, width, rotation, color) {
+
+    var vertexColors = [
+        color,
+        color,
+        color,
+        color,
+        color,
+        color,
+        color,
+        color
+    ];
+
+    /*
+    var vertexColors = [
+        vec4( 0.0, 0.0, 0.0, 1.0 ),
+        vec4( 1.0, 0.0, 0.0, 1.0 ),
+        vec4( 0.0, 1.0, 0.0, 1.0 ),
+        vec4( 0.0, 0.0, 1.0, 1.0 ),
+        vec4( 1.0, 1.0, 0.0, 1.0 ),
+        vec4( 1.0, 0.0, 1.0, 1.0 ),
+        vec4( 0.0, 1.0, 1.0, 1.0 ),
+        vec4( 0.5, 0.5, 0.5, 1.0 ),
+    ];
+    */
+
+    const lengthh = length / 2;
+    const heighth = height / 2;
+    const widthh = width / 2;
+
+    var local_vertices = [
+        vec3( -lengthh, -heighth,  widthh ),
+        vec3( -lengthh,  heighth,  widthh ),
+        vec3(  lengthh,  heighth,  widthh ),
+        vec3(  lengthh, -heighth,  widthh ),
+        vec3( -lengthh, -heighth, -widthh ),
+        vec3( -lengthh,  heighth, -widthh ),
+        vec3(  lengthh,  heighth, -widthh ),
+        vec3(  lengthh, -heighth, -widthh )
+    ];
+    var vertices = [];
+
+    var rotx = rotateX(rotation[0]);
+    var roty = rotateY(rotation[1]);
+    var rotz = rotateZ(rotation[2]);
+    var rot = mult(rotx, mult(roty, rotz));
+    var t = mult(translate(center), rot);
+
+    for (let v of local_vertices) {
+        var v4 = vec4(v, 1);
+        var rot_v4 = vec3( dot(v4, t[0]), dot(v4, t[1]), dot(v4, t[2]) );
+        vertices.push(vec3( rot_v4[0], rot_v4[1], rot_v4[2] ));
+    }
+
+    var indices = [
+        1, 0, 3,
+        3, 2, 1,
+        2, 3, 7,
+        7, 6, 2,
+        3, 0, 4,
+        4, 7, 3,
+        6, 5, 1,
+        1, 2, 6,
+        4, 5, 6,
+        6, 7, 4,
+        5, 4, 0,
+        0, 1, 5
+    ];
+
+    return {
+        vertices: vertices,
+        vertexColors: vertexColors,
+        numVertices: 36,
+        indices: indices
+    }
+
+}
+
+function makePyramid(center, base, height, rotation, color ) {
+
+    var vertexColors = [
+        color,
+        color,
+        color,
+        color
+    ];
+
+    /*
+    var vertexColors = [
+        vec4( 1.0, 0.0, 0.0, 1.0 ),
+        vec4( 0.0, 1.0, 0.0, 1.0 ),
+        vec4( 0.0, 0.0, 1.0, 1.0 ),
+        vec4( 1.0, 1.0, 0.0, 1.0 )
+    ];
+    */
+
+    const baseh = base / 2;
+    const heighth = height / 2;
+
+    var local_vertices = [
+        vec3( 0.0, height, 0.0 ),
+        vec3( baseh, -heighth, 0.0 ),
+        vec3( -baseh, -heighth, baseh),
+        vec3( -baseh, -heighth, -baseh)
+    ];
+    var vertices = [];
+
+    var rotx = rotateX(rotation[0]);
+    var roty = rotateY(rotation[1]);
+    var rotz = rotateZ(rotation[2]);
+    var rot = mult(rotx, mult(roty, rotz));
+    var t = mult(translate(center), rot);
+
+    for (let v of local_vertices) {
+        var v4 = vec4(v, 1);
+        var rot_v4 = vec3( dot(v4, t[0]), dot(v4, t[1]), dot(v4, t[2]) );
+        vertices.push(vec3( rot_v4[0], rot_v4[1], rot_v4[2] ));
+    }
+
+    var indices = [
+        0, 1, 2,
+        0, 1, 3,
+        0, 2, 3,
+        1, 2, 3
+    ];
+
+    return {
+        vertices: vertices,
+        vertexColors: vertexColors,
+        numVertices: 12,
+        indices: indices
+    }
+
+}
+
+function constructComplexShape(shapes) {
+
+    var vertices = [];
+    var vertexColors = [];
+    var indices = [];
+    var numVertices = 0;
+    var offset= 0;
+
+    for (const shape of shapes) {
+        vertices = vertices.concat(shape.vertices);
+        vertexColors = vertexColors.concat(shape.vertexColors);
+        indices = indices.concat(shape.indices.map(i => i + offset));
+        numVertices += shape.numVertices;
+        offset += shape.vertices.length;
+    }
+
+    return {
+        vertices: vertices,
+        vertexColors: vertexColors,
+        indices: indices,
+        numVertices: numVertices
+    };
+
+}
+
 var canvas;
 var gl;
 
@@ -86,41 +246,91 @@ var zAxis = 2;
 var theta = [ 0, 0, 0 ];
 var thetaLoc;
 
-let shape = makeCube(vec3(0.0, 0.0, 0), 1.0, vec3(45, 0, 15), vec4(0.5, 0.25, 0.5, 1.0));
+let hat = makePyramid(
+    vec3(0, .65, 0),
+    .08, .1,
+    vec3(0,0,0),
+    vec4(0,0,1,1)
+);
+
+// (.1, .6, .1) -> (-.1, .4, -.1)
+let head = makeCube(
+    vec3(0, .5, 0),
+    0.2,
+    vec3(0,0,0),
+    vec4(1,0,0,1)
+);
+
+let eye1 = makeCube(
+    vec3(-.04, .5, .1),
+    0.02,
+    vec3(0,0,0),
+    vec4(0,0,0,1)
+);
+
+let eye2 = makeCube(
+    vec3(.04, .5, .1),
+    0.02,
+    vec3(0,0,0),
+    vec4(0,0,0,1)
+);
+
+let torso = makeRectangularPrism(
+    vec3(0, .15, 0),
+    .4, .5, .2,
+    vec3(0,0,0),
+    vec4(0,0,1,1)
+);
+
+let shoulder1 = makePyramid(
+    vec3(.2, .3, 0),
+    .2, .1,
+    vec3(0,-90,90),
+    vec4(1,0,0,1)
+);
+
+let shoulder2 = makePyramid(
+    vec3(-.2, .3, 0),
+    .2, .1,
+    vec3(0,-90,90),
+    vec4(1,0,0,1)
+);
+
+let arm1 = makeRectangularPrism(
+    vec3(-.23, .365, .2),
+    .075, .07, .3,
+    vec3(0,0,0),
+    vec4(1,0,0,1)
+);
+
+let arm2 = makeRectangularPrism(
+    vec3(.23, .365, .2),
+    .075, .07, .3,
+    vec3(0,0,0),
+    vec4(1,0,0,1)
+);
+
+let leg1 = makeRectangularPrism(
+    vec3(-.1, -.25, 0),
+    .1, .3, .1,
+    vec3(0,0,0),
+    vec4(1,0,0,1)
+);
+
+let leg2 = makeRectangularPrism(
+    vec3(.1, -.25, 0),
+    .1, .3, .1,
+    vec3(0,0,0),
+    vec4(1,0,0,1)
+);
+
+let shape = constructComplexShape([hat, head, eye1, eye2, torso,
+    shoulder1, shoulder2, arm1, arm2, leg1, leg2]);
+
 var vertices = shape.vertices;
 var vertexColors = shape.vertexColors;
 var indices = shape.indices;
 var numVertices = shape.numVertices;
-
-/*
-var vertices = [
-    // Head: Pyramid
-    vec3(  0.0,  0.5,  0.0 ), // 0
-    vec3(  0.5, -0.5,  0.0 ), // 1
-    vec3( -0.5, -0.5, -0.5 ), // 2
-    vec3( -0.5, -0.5,  0.5 ), // 3
-
-];
-
-var vertexColors = [
-    // Head: Pyramid
-    vec4( 1.0, 0.5, 0.0, 1.0 ),
-    vec4( 0.0, 0.0, 0.0, 1.0 ),
-    vec4( 0.0, 0.0, 0.0, 1.0 ),
-    vec4( 0.0, 0.0, 0.0, 1.0 ),
-
-];
-
-var numVertices  = 12;
-var indices = [
-    // Head: Pyramid
-    0, 1, 2,
-    0, 1, 3,
-    0, 2, 3,
-    1, 2, 3
-
-];
-*/
 
 window.onload = function init()
 {
@@ -188,7 +398,8 @@ function render()
 {
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    theta[axis] += 2.0;
+    axis = (axis + 1) % 3;
+    theta[axis] += 3.0;
     gl.uniform3fv(thetaLoc, theta);
 
 
