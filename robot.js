@@ -2,16 +2,16 @@
 
 function makeCube(center, size, rotation, color, canRecolor) {
 
-        var vertexColors = [
-            color,
-            color,
-            color,
-            color,
-            color,
-            color,
-            color,
-            color
-        ];
+    var vertexColors = [
+        color,
+        color,
+        color,
+        color,
+        color,
+        color,
+        color,
+        color
+    ];
 
     const sizeh = size / 2;
 
