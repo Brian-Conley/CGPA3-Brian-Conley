@@ -224,12 +224,18 @@ function recolor(complexShape) {
 var canvas;
 var gl;
 
-var axis = 1;
-var xAxis = 0;
-var yAxis =1;
-var zAxis = 2;
-var theta = [ 0, 0, 0 ];
+const startingTheta = -45.0;
+var targetTheta = startingTheta;
+var theta = [15,startingTheta,0];
 var thetaLoc;
+var turnRate = 6.0;
+var degreesTurned = 0;
+var jumping = false;
+var jumpStep = 0;
+var jumpOffset = 0.05;
+var translation = [0,0,0];
+var translationLoc;
+var running = true;
 
 let hat = makePyramid(
     vec3(0, .65, 0),
@@ -363,6 +369,7 @@ window.onload = function init()
 
     // vertex array attribute buffer
 
+    // var vBuffer = gl.createBuffer();
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW );
@@ -372,34 +379,92 @@ window.onload = function init()
     gl.enableVertexAttribArray( vPosition );
 
     thetaLoc = gl.getUniformLocation(program, "theta");
+    translationLoc = gl.getUniformLocation(program, "translation");
 
     //event listeners for buttons
 
-    document.getElementById( "xButton" ).onclick = function () {
-        axis = xAxis;
-    };
-    document.getElementById( "yButton" ).onclick = function () {
-        axis = yAxis;
-    };
-    document.getElementById( "zButton" ).onclick = function () {
-        axis = zAxis;
-    };
-    document.getElementById( "colorButton" ).onclick = function () {
+    function trigger_recolor() {
         recolor(shape);
         gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, flatten(shape.vertexColors), gl.STATIC_DRAW);
+    }
+
+    function trigger_jump() {
+        if (!jumping) {
+            jumping = true;
+            jumpStep = 0;
+        }
+    }
+
+    function trigger_quit() {
+        running = false;
+        document.getElementById("quitText")
+            .textContent = "Program terminated. Rendering has been halted."
+    }
+
+    document.getElementById( "colorButton" ).onclick = function () {
+        //recolor(shape);
+        //gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+        //gl.bufferData(gl.ARRAY_BUFFER, flatten(shape.vertexColors), gl.STATIC_DRAW);
+        trigger_recolor();
     };
 
+    document.getElementById( "turnButton" ).onclick = function () {
+        targetTheta += 180;
+    };
+
+    document.getElementById( "jumpButton" ).onclick = function () {
+        trigger_jump();
+    };
+
+    document.getElementById( "quitButton" ).onclick = function () {
+        trigger_quit();
+    };
+
+    window.addEventListener("keydown", function(event) {
+        switch (event.key) {
+            case "j":
+                trigger_jump();
+                break;
+            case "c":
+                trigger_recolor();
+                break;
+            case "t":
+                targetTheta += 180;
+                break;
+            case "q":
+                trigger_quit();
+                break;
+        }
+    });
 
     render();
 }
 
 function render()
 {
+    if (!running) { return; }
+
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    theta[axis] += 3.0;
+    if (theta[1] < targetTheta) {
+        theta[1] += turnRate;
+    }
+
+    if (jumping) {
+        if (jumpStep < 10) {
+            translation[1] += 0.05;
+        } else if (jumpStep < 20) {
+            translation[1] -= .05;
+        } else {
+            translation[1] = 0;
+            jumping = false;
+        }
+        jumpStep++;
+    }
+
     gl.uniform3fv(thetaLoc, theta);
+    gl.uniform3fv(translationLoc, translation);
 
     gl.drawElements( gl.TRIANGLES, numVertices, gl.UNSIGNED_BYTE, 0 );
 

@@ -8,6 +8,7 @@ attribute  vec4 vColor;
 varying vec4 fColor;
 
 uniform vec3 theta;
+uniform vec3 translation;
 
 void main()
 {
@@ -34,8 +35,15 @@ void main()
 		    0.0,  0.0, 1.0, 0.0,
 		    0.0,  0.0, 0.0, 1.0 );
 
+    mat4 tr = mat4(
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        translation.x, translation.y, translation.z, 1.0
+    );
+
     fColor = vColor;
-    gl_Position = rz * ry * rx * vPosition;
+    gl_Position = tr * rz * ry * rx * vPosition;
     gl_Position.z = -gl_Position.z;
 }
 </script>
@@ -59,22 +67,21 @@ main()
 <script type="text/javascript" src="robot.js"></script>
 
 <body>
-<canvas id="gl-canvas" width="512"" height="512">
-Oops ... your browser doesn't support the HTML5 canvas element
-</canvas>
-
-<br/>
-
-<button id= "xButton">Rotate X</button>
-<button id= "yButton">Rotate Y</button>
-<button id= "zButton">Rotate Z</button>
-
-<div>
-    <button id="colorButton">Change color (c)</button>
-    <button id="jumpButton">Jump (j)</button>
-    <button id="turnButton">Turn around (j)</button>
-    <button id="quitButton">Quit (q)</button>
+<div style="display: flex; flex-direction: column; align-items: center;">
+    <canvas id="gl-canvas" width="256"" height="256">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+    <p id="quitText" style="color: red;">
+    </p>
+    <h3>Controls</h3>
+    <div>
+        <button id="colorButton", style="width: 125px;">Change color (c)</button>
+        <button id="turnButton", style="width: 125px;">Turn around (t)</button>
+    </div>
+    <div>
+        <button id="jumpButton", style="width: 125px;">Jump (j)</button>
+        <button id="quitButton", style="width: 125px;">Quit (q)</button>
+    </div>
 </div>
-
 </body>
 </html>
