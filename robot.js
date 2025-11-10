@@ -403,9 +403,6 @@ window.onload = function init()
     }
 
     document.getElementById( "colorButton" ).onclick = function () {
-        //recolor(shape);
-        //gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-        //gl.bufferData(gl.ARRAY_BUFFER, flatten(shape.vertexColors), gl.STATIC_DRAW);
         trigger_recolor();
     };
 
